@@ -9,7 +9,10 @@ extern "C" {
 #define _POSIX_C_SOURCE 200809L
 #endif /* getline() support */
 
-#include <stdlib.h>
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 600
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
