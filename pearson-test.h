@@ -29,6 +29,7 @@ extern "C" {
 #define DELIMITER_LEN 1
 #define ENTRY_MAX_LEN 20
 #define AVX_FLOAT_N 8
+#define ALIGNMENT 32
 
     typedef unsigned char byte_t;
     typedef float score_t;

@@ -2,7 +2,7 @@ SHELL := /bin/bash
 PLATFORM := $(shell uname -s)
 
 CC = gcc
-BLDFLAGS = -Wall -Wextra -std=c11 -mavx
+BLDFLAGS = -Wall -Wextra -mavx -std=c11
 CFLAGS = -D__USE_POSIX -D__STDC_CONSTANT_MACROS -D__STDINT_MACROS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE=1 -O3
 INCLUDES = /usr/include
 LIBS = -lm

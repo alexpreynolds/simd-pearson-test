@@ -234,22 +234,23 @@ pt_initialize_signal_avx(char* id, signal_avx_t** sp)
        which is stored in a constant called AVX_FLOAT_N
     */
 
-    uint32_t n_padded = s->n_raw + AVX_FLOAT_N - (s->n_raw % AVX_FLOAT_N);
+    uint32_t n_padded = s->n_raw + ALIGNMENT - (s->n_raw % ALIGNMENT);
     score_t* scores = NULL;
-    scores = malloc(n_padded * sizeof(*scores));
-    if (!scores) {
+    int scores_align_res = posix_memalign((void**)(&scores), ALIGNMENT, n_padded*(sizeof(*scores)));
+
+    if (!scores || (scores_align_res != 0)) {
         fprintf(stderr, "Error: Could not allocate space for scores buffer!\n");
         exit(EXIT_FAILURE);
     }
     /* zero the tail end of the scores array -- any remainder won't affect sum */
-    for (uint32_t idx = n_padded - AVX_FLOAT_N; idx < n_padded; idx++) {
+    for (uint32_t idx = n_padded - ALIGNMENT; idx < n_padded; idx++) {
         scores[idx] = 0.0f;
     }
 
     /* allocate space for multiple of eight bytes, with room to spare */
     s->n = (uint32_t)((float)(s->n_raw) / AVX_FLOAT_N) + 1;
-    s->data = malloc(sizeof(**s->data) * s->n);
-    if (!s->data) {
+    int data_align_res = posix_memalign((void**)(&s->data), ALIGNMENT, s->n*(sizeof(**s->data)));
+    if (!s->data || (data_align_res != 0)) {
         fprintf(stderr, "Error: Could not allocate space for signal_avx data pointer!\n");
         exit(EXIT_FAILURE);
     }
