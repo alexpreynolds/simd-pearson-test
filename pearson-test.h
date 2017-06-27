@@ -99,7 +99,7 @@ extern "C" {
     typedef struct signal_avx {
         uint32_t n_raw;
         uint32_t n;
-        __m256* data;
+        __m256** data;
         score_t mean;
         score_t sd;
     } signal_avx_t;
@@ -153,7 +153,7 @@ extern "C" {
     void pt_print_usage(FILE* os);
     void pt_delete_globals();
     score_t pt_pearson_r_via_signal_t(signal_t* a, signal_t* b);
-    static inline score_t pt_mean_signal_avx(__m256* d, uint32_t len);
+    static inline score_t pt_mean_signal_avx(__m256** d, uint32_t len);
     score_t pt_mean_signal(score_t* d, uint32_t len);
     score_t pt_sample_sd_signal_avx(score_t* d, uint32_t len, score_t m);
     score_t pt_sample_sd_signal(score_t* d, uint32_t len, score_t m);
