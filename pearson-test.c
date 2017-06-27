@@ -249,7 +249,7 @@ pt_initialize_signal_avx(char* id, signal_avx_t** sp)
 
     /* allocate space for multiple of eight bytes, with room to spare */
     s->n = (uint32_t)((float)(s->n_raw) / AVX_FLOAT_N) + 1;
-    int data_align_res = posix_memalign((void**)(&s->data), ALIGNMENT, s->n*(sizeof(**s->data)));
+    int data_align_res = posix_memalign((void**)(&s->data), ALIGNMENT, s->n*(sizeof(*s->data)));
     if (!s->data || (data_align_res != 0)) {
         fprintf(stderr, "Error: Could not allocate space for signal_avx data pointer!\n");
         exit(EXIT_FAILURE);
@@ -278,7 +278,9 @@ pt_initialize_signal_avx(char* id, signal_avx_t** sp)
 
     for (uint32_t k = 0; k < n_padded; k += AVX_FLOAT_N) {
         __m256 res = _mm256_load_ps(scores + k);
-        s->data[data_idx++] = &res;
+        s->data[data_idx] = _mm256_setzero_ps();
+        s->data[data_idx] = _mm256_add_ps(s->data[data_idx], res);
+        data_idx++;
     }
    
     if (!data_contains_nan) {
@@ -649,7 +651,7 @@ pt_pearson_r_via_signal_t(signal_t* a, signal_t* b)
 }
 
 static inline score_t
-pt_mean_signal_avx(__m256** d, uint32_t len)
+pt_mean_signal_avx(__m256* d, uint32_t len)
 {
     score_t tmp[AVX_FLOAT_N];
     score_t s;
@@ -658,7 +660,7 @@ pt_mean_signal_avx(__m256** d, uint32_t len)
     __m256 accumulator = _mm256_setzero_ps();
 
     for (uint32_t idx = 0; idx < eighthPoints; idx++) {
-        accumulator = _mm256_add_ps(accumulator, *(d[idx]));
+        accumulator = _mm256_add_ps(accumulator, d[idx]);
     }
 
     _mm256_store_ps(tmp, accumulator);
