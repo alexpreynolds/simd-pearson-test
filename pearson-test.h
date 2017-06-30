@@ -32,7 +32,7 @@ extern "C" {
 #define DELIMITER_LEN 1
 #define ENTRY_MAX_LEN 20
 #define AVX_FLOAT_N 8
-#define ALIGNMENT 32
+#define AVX_ALIGNMENT 32
 
     typedef unsigned char byte_t;
     typedef float score_t;
@@ -55,7 +55,7 @@ extern "C" {
     extern const score_t kNoCorrelationScore;
     const score_t kNoCorrelationScore = +0.0f;
 
-    static const score_t pt_encode_byte_to_score_table[256] = 
+    static const score_t bs_encode_byte_to_score_table[256] = 
         {-1.00, 
          -0.99, -0.98, -0.97, -0.96, -0.95, -0.94, -0.93, -0.92, -0.91, -0.90,
          -0.89, -0.88, -0.87, -0.86, -0.85, -0.84, -0.83, -0.82, -0.81, -0.80,
@@ -101,9 +101,8 @@ extern "C" {
     } bed5_t;
 
     typedef struct signal_avx {
-        uint32_t n_raw;
         uint32_t n;
-        __m256* data;
+        score_t* data;
         score_t mean;
         score_t sd;
     } signal_avx_t;
@@ -128,7 +127,13 @@ extern "C" {
         bed5_avx_t** elems;
     } lookup_avx_t;
 
-    static struct pt_globals_t {
+    typedef struct scores_avx {
+        score_t* buf;
+        uint32_t n;
+        uint32_t capacity;
+    } scores_avx_t;
+
+    static struct bs_globals_t {
         bool verbose;
         char* input_fn;
         char* output_fn;
@@ -136,40 +141,40 @@ extern "C" {
         bool avx_enabled;
         lookup_t* lookup;
         lookup_avx_t* lookup_avx;
-    } pt_globals;
+    } bs_globals;
 
-    void pt_initialize_lookup_avx_via_signal_avx(const char* ifn, lookup_avx_t** lp);    
-    void pt_initialize_lookup_via_signal(const char* ifn, lookup_t** lp);
-    void pt_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* id, bed5_avx_t** ep);
-    void pt_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, bed5_t** ep);
-    void pt_initialize_signal_avx(char* id, signal_avx_t** sp);
-    void pt_initialize_signal(char* id, signal_t** sp);
-    void pt_push_bed5_avx_element_to_lookup_avx(bed5_avx_t* e, lookup_avx_t** lp);
-    void pt_push_bed5_element_to_lookup(bed5_t* e, lookup_t** lp);
-    void pt_delete_lookup_avx(lookup_avx_t** lp);
-    void pt_delete_lookup(lookup_t** lp);
-    void pt_delete_bed5_avx_element(bed5_avx_t** ep);
-    void pt_delete_bed5_element(bed5_t** ep);
-    void pt_delete_signal_avx(signal_avx_t** sp);
-    void pt_delete_signal(signal_t** sp);
-    void pt_initialize_globals();
-    void pt_initialize_command_line_options(int argc, char** argv);
-    void pt_print_usage(FILE* os);
-    void pt_delete_globals();
-    score_t pt_pearson_r_via_signal_t(signal_t* a, signal_t* b);
-    static inline score_t pt_mean_signal_avx(__m256* d, uint32_t len);
-    score_t pt_mean_signal(score_t* d, uint32_t len);
-    score_t pt_sample_sd_signal_avx(score_t* d, uint32_t len, score_t m);
-    score_t pt_sample_sd_signal(score_t* d, uint32_t len, score_t m);
-    inline score_t pt_truncate_score_to_precision(score_t d, int prec);
-    inline byte_t pt_encode_score_to_byte(score_t d);
-    inline bool pt_signbit(score_t d);
-    void pt_calculate_pearson_scores_via_signal_avx(lookup_avx_t* l);
-    void pt_calculate_pearson_scores_via_signal(lookup_t* l);
+    void bs_initialize_lookup_avx_via_signal_avx(const char* ifn, lookup_avx_t** lp);    
+    void bs_initialize_lookup_via_signal(const char* ifn, lookup_t** lp);
+    void bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* id, signal_avx_t* sa, bed5_avx_t** ep);
+    void bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, bed5_t** ep);
+    void bs_copy_signal_avx(signal_avx_t* src, signal_avx_t** dest);
+    void bs_initialize_signal_avx(char* id, signal_avx_t** sp);
+    void bs_initialize_signal(char* id, signal_t** sp);
+    void bs_push_bed5_avx_element_to_lookup_avx(bed5_avx_t* e, lookup_avx_t** lp);
+    void bs_push_bed5_element_to_lookup(bed5_t* e, lookup_t** lp);
+    void bs_delete_lookup_avx(lookup_avx_t** lp);
+    void bs_delete_lookup(lookup_t** lp);
+    void bs_delete_bed5_avx_element(bed5_avx_t** ep);
+    void bs_delete_bed5_element(bed5_t** ep);
+    void bs_delete_signal_avx(signal_avx_t** sp);
+    void bs_delete_signal(signal_t** sp);
+    void bs_initialize_globals();
+    void bs_initialize_command_line_options(int argc, char** argv);
+    void bs_print_usage(FILE* os);
+    void bs_delete_globals();
+    score_t bs_pearson_r_via_signal_t(signal_t* a, signal_t* b);
+    static inline score_t bs_mean_signal(score_t* d, uint32_t len);
+    score_t bs_sample_sd_signal(score_t* d, uint32_t len, score_t m);
+    inline score_t bs_truncate_score_to_precision(score_t d, int prec);
+    inline byte_t bs_encode_score_to_byte(score_t d);
+    inline bool bs_signbit(score_t d);
+    void bs_calculate_pearson_scores_via_signal_avx(lookup_avx_t* l);
+    void bs_calculate_pearson_scores_via_signal(lookup_t* l);
+    static inline void bs_calculate_mean_and_sd_signal_avx(score_t* d, uint32_t n, score_t* mean, score_t* sd);
 
-    static const char* pt_client_opt_string = "ai:o:vh?";
+    static const char* bs_client_opt_string = "ai:o:vh?";
 
-    static struct option pt_client_long_options[] = {
+    static struct option bs_client_long_options[] = {
         { "avx",                                        no_argument,       NULL, 'a' },
         { "input",                                      required_argument, NULL, 'i' },
         { "output",                                     required_argument, NULL, 'o' },

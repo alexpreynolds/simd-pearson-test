@@ -3,7 +3,7 @@ PLATFORM := $(shell uname -s)
 
 CC = gcc
 BLDFLAGS = -Wall -Wextra -mavx -std=c11
-CFLAGS = -D__USE_POSIX -D__STDC_CONSTANT_MACROS -D__STDINT_MACROS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE=1 -O3
+CFLAGS = -D__USE_POSIX -D__STDC_CONSTANT_MACROS -D__STDINT_MACROS -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE=1 -O2
 INCLUDES = -I/usr/include -I/net/module/sw/glibc/2.22/include
 LIBS = -L/net/module/sw/glibc/2.22/lib
 LINKS = -lm
@@ -28,8 +28,10 @@ test: build test-non-avx test-avx
 
 build:
 	@echo "build..."
-	$(CC) -g $(BLDFLAGS) $(CFLAGS) -c pearson-test.c -o pearson-test.o
-	$(CC) -g $(BLDFLAGS) $(CFLAGS) $(INCLUDES) $(LIBS) pearson-test.o -o ${binary} $(LINKS)
+	module add gcc; \
+	module add glibc; \
+	$(CC) -g $(BLDFLAGS) $(CFLAGS) -c pearson-test.c -o pearson-test.o; \
+	$(CC) -g $(BLDFLAGS) $(CFLAGS) $(INCLUDES) $(LIBS) pearson-test.o -o ${binary} $(LINKS); \
 
 test-non-avx: build
 	@echo "test (non-AVX)..."
