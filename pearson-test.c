@@ -138,9 +138,6 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
         fprintf(stderr, "Error: Could not allocate space for bed5_avx element!\n");
         exit(EXIT_FAILURE);
     }
-    else {
-        //fprintf(stderr, "allocated new element\n");
-    }
 
     e->chr = NULL;
     if (strlen(chr) > 0) {
@@ -150,15 +147,9 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
             exit(EXIT_FAILURE);
         }
         memcpy(e->chr, chr, strlen(chr) + 1);
-        //fprintf(stderr, "copied chromosome name to new element\n");
     }
-
     e->start = start;
-    //fprintf(stderr, "copied start position to new element\n");
-
     e->stop = stop;
-    //fprintf(stderr, "copied stop position to new element\n");
-
     e->id = NULL;
     if (strlen(id) > 0) {
         e->id = malloc(sizeof(*id) * strlen(id) + 1);
@@ -167,19 +158,15 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
             exit(EXIT_FAILURE);
         }
         memcpy(e->id, id, strlen(id) + 1);
-        //fprintf(stderr, "copied ID to new element\n");
     }
     else {
         fprintf(stderr, "could not copy ID to new element\n");
     }
-
     e->signal = NULL;
     if (!sa) {
-        //fprintf(stderr, "setting up new signal()\n");
         bs_initialize_signal_avx(e->id, &(e->signal));
     }
     else {
-        //fprintf(stderr, "copying old signal()\n");
         bs_copy_signal_avx(sa, &(e->signal));
     }
 
@@ -223,14 +210,11 @@ bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, s
         memcpy(e->id, id, strlen(id) + 1);
     }
 
-    //(e->id) ? bs_initialize_signal(e->id, &(e->signal)) : NULL;
     e->signal = NULL;
     if (!sp) {
-        //fprintf(stderr, "setting up new signal()\n");
         bs_initialize_signal(e->id, &(e->signal));
     }
     else {
-        //fprintf(stderr, "copying old signal()\n");
         bs_copy_signal(sp, &(e->signal));
     }
 
@@ -253,8 +237,8 @@ bs_copy_signal_avx(signal_avx_t* src, signal_avx_t** dest)
     }
     s->n = src->n;
     s->data = NULL;
-    s->data = aligned_alloc(32, s->n * sizeof(*s->data));
-    if (!s->data) {
+    int alloc_result = posix_memalign((void **) &(s->data), AVX_ALIGNMENT, s->n * sizeof(*s->data));
+    if ((alloc_result != 0) || (!s->data)) {
         fprintf(stderr, "Error: Could not allocate space for signal_avx data pointer!\n");
         exit(EXIT_FAILURE);
     }
@@ -278,9 +262,9 @@ bs_copy_signal(signal_t* src, signal_t** dest)
     }
     s->n = src->n;
     s->data = NULL;
-    s->data = aligned_alloc(32, s->n * sizeof(*s->data));
-    if (!s->data) {
-        fprintf(stderr, "Error: Could not allocate space for signal_t data pointer!\n");
+    int alloc_result = posix_memalign((void **) &(s->data), GENERIC_ALIGNMENT, s->n * sizeof(*s->data));
+    if ((alloc_result != 0) || (!s->data)) {
+        fprintf(stderr, "Error: Could not allocate space for signal data pointer!\n");
         exit(EXIT_FAILURE);
     }
     for (uint32_t idx = 0; idx < s->n; idx++) {
@@ -316,9 +300,9 @@ bs_initialize_signal_avx(char* id, signal_avx_t** sp)
     }
     s->n++; // one more element than number of delimiters
 
-    s->data = aligned_alloc(32, s->n * sizeof(*s->data));
-    if (!s->data) {
-        fprintf(stderr, "Error: Could not allocate space for signal data pointer!\n");
+    int alloc_result = posix_memalign((void **) &(s->data), AVX_ALIGNMENT, s->n * sizeof(*s->data));
+    if ((alloc_result != 0) || (!s->data)) {
+        fprintf(stderr, "Error: Could not allocate space for signal_avx data pointer!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -375,10 +359,9 @@ bs_initialize_signal(char* id, signal_t** sp)
     }
     s->n++;
 
-    //s->data = malloc(sizeof(*s->data) * s->n);
     s->data = NULL;
-    s->data = aligned_alloc(32, s->n * sizeof(*s->data));
-    if (!s->data) {
+    int alloc_result = posix_memalign((void **) &(s->data), GENERIC_ALIGNMENT, s->n * sizeof(*s->data));
+    if ((alloc_result != 0) || (!s->data)) {
         fprintf(stderr, "Error: Could not allocate space for signal data pointer!\n");
         exit(EXIT_FAILURE);
     }

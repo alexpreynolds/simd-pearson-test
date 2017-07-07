@@ -33,6 +33,7 @@ extern "C" {
 #define ENTRY_MAX_LEN 20
 #define AVX_FLOAT_N 8
 #define AVX_ALIGNMENT 32
+#define GENERIC_ALIGNMENT 64
 
     typedef unsigned char byte_t;
     typedef float score_t;
