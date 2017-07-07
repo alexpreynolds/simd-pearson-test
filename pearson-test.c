@@ -1,7 +1,7 @@
 #include "pearson-test.h"
 
 int
-main(int argc, char** argv) 
+main(int argc, char** argv)
 {
     bs_initialize_globals();
     bs_initialize_command_line_options(argc, argv);
@@ -34,7 +34,7 @@ bs_initialize_lookup_avx_via_signal_avx(const char* ifn, lookup_avx_t** lp)
     char id_str[ID_MAX_LEN] = {0};
     uint64_t start_val = 0;
     uint64_t stop_val = 0;
-    
+
     l = malloc(sizeof(lookup_avx_t));
     if (!l) {
         fprintf(stderr, "Error: Could not allocate space for lookup table!\n");
@@ -89,7 +89,7 @@ bs_initialize_lookup_via_signal(const char* ifn, lookup_t** lp)
     char id_str[ID_MAX_LEN] = {0};
     uint64_t start_val = 0;
     uint64_t stop_val = 0;
-    
+
     l = malloc(sizeof(lookup_t));
     if (!l) {
         fprintf(stderr, "Error: Could not allocate space for lookup table!\n");
@@ -140,7 +140,7 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
     else {
         //fprintf(stderr, "allocated new element\n");
     }
-    
+
     e->chr = NULL;
     if (strlen(chr) > 0) {
         e->chr = malloc(strlen(chr) + 1);
@@ -151,13 +151,13 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
         memcpy(e->chr, chr, strlen(chr) + 1);
         //fprintf(stderr, "copied chromosome name to new element\n");
     }
-    
+
     e->start = start;
     //fprintf(stderr, "copied start position to new element\n");
-    
+
     e->stop = stop;
     //fprintf(stderr, "copied stop position to new element\n");
-    
+
     e->id = NULL;
     if (strlen(id) > 0) {
         e->id = malloc(sizeof(*id) * strlen(id) + 1);
@@ -171,9 +171,9 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
     else {
         fprintf(stderr, "could not copy ID to new element\n");
     }
-    
+
     e->signal = NULL;
-    if (!sa) { 
+    if (!sa) {
         //fprintf(stderr, "setting up new signal()\n");
         bs_initialize_signal_avx(e->id, &(e->signal));
     }
@@ -186,7 +186,7 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
         fprintf(stderr, "Error: Could not parse BED elements into bed5_avx_t struct\n");
         exit(EXIT_FAILURE);
     }
-    
+
     *ep = e;
 }
 
@@ -227,7 +227,7 @@ bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, b
         fprintf(stderr, "Error: Could not parse BED elements into bed5_t struct\n");
         exit(EXIT_FAILURE);
     }
-    
+
     *ep = e;
 }
 
@@ -402,10 +402,10 @@ bs_push_bed5_avx_element_to_lookup_avx(bed5_avx_t* e, lookup_avx_t** lp)
                                            &new_elems[idx]);
             if (bs_globals.verbose) fprintf(stderr, "deleting old element at index [%u]...\n", idx + 1);
             bs_delete_bed5_avx_element(&((*lp)->elems[idx]));
-        }   
+        }
         free((*lp)->elems);
         (*lp)->elems = NULL;
-        (*lp)->elems = new_elems;     
+        (*lp)->elems = new_elems;
     }
     if (bs_globals.verbose) fprintf(stderr, "number of elements now [%d]\n", (*lp)->nelems + 1);
     uint32_t n = (*lp)->nelems;
@@ -435,8 +435,8 @@ bs_push_bed5_element_to_lookup(bed5_t* e, lookup_t** lp)
                                        &new_elems[idx]);
             if (bs_globals.verbose) fprintf(stderr, "deleting old element at index [%u]...\n", idx + 1);
             bs_delete_bed5_element(&((*lp)->elems[idx]));
-        }   
-        (*lp)->elems = new_elems;     
+        }
+        (*lp)->elems = new_elems;
     }
     if (bs_globals.verbose) fprintf(stderr, "number of elements now [%d]\n", (*lp)->nelems + 1);
     uint32_t n = (*lp)->nelems;
@@ -567,7 +567,7 @@ bs_delete_globals()
     }
 }
 
-void 
+void
 bs_initialize_command_line_options(int argc, char** argv)
 {
     int bs_client_long_index;
@@ -607,7 +607,7 @@ bs_initialize_command_line_options(int argc, char** argv)
             exit(EXIT_SUCCESS);
         default:
             break;
-        }        
+        }
         bs_client_opt = getopt_long(argc,
                                     argv,
                                     bs_client_opt_string,
@@ -625,8 +625,8 @@ bs_initialize_command_line_options(int argc, char** argv)
     }
 }
 
-void 
-bs_print_usage(FILE* os) 
+void
+bs_print_usage(FILE* os)
 {
     fprintf(os, "Usage:\n\t$ pearson-test --input <input.bed5> [--output <output.bs>]\n");
 }
@@ -642,7 +642,7 @@ bs_pearson_r_via_signal_avx_t(signal_avx_t* a, signal_avx_t* b)
         return NAN;
     }
     score_t s = 0.0f;
-    
+
     score_t sum8[8] = {0};
     __m256 a_vec_mean = _mm256_set1_ps(a->mean);
     __m256 b_vec_mean = _mm256_set1_ps(b->mean);
@@ -689,18 +689,11 @@ bs_pearson_r_via_signal_avx_t(signal_avx_t* a, signal_avx_t* b)
     return s / ((a->n - 1.0f) * a->sd * b->sd);
 }
 
-score_t
-bs_pearson_r_via_signal_t(signal_t* a, signal_t* b)
+static inline score_t
+bs_pearson_r_via_signal_t(signal_t* a, signal_t* b, uint32_t len)
 {
-    if (a->n != b->n) {
-        fprintf(stderr, "Error: Vectors being correlated are of unequal length!\n");
-        exit(EXIT_FAILURE);
-    }
-    if ((a->sd == 0.0f) || (b->sd == 0.0f)) {
-        return NAN;
-    }
     score_t s = 0.0f;
-    for (uint32_t idx = 0; idx < a->n; idx++)
+    for (uint32_t idx = 0; idx < len; idx++)
         s += (a->data[idx] - a->mean) * (b->data[idx] - b->mean);
     return s / ((a->n - 1.0f) * a->sd * b->sd);
 }
@@ -762,7 +755,7 @@ bs_calculate_pearson_scores_via_signal_avx(lookup_avx_t* l)
             if (bs_globals.verbose) fprintf(stderr, "cell [%05u, %05u] score [%f] encoding [%02x]\n", row_idx, col_idx, score, encoded_score);
             fprintf(stdout, "%c", encoded_score);
         }
-    }    
+    }
 }
 
 void
@@ -772,22 +765,29 @@ bs_calculate_pearson_scores_via_signal(lookup_t* l)
 
     for (uint32_t row_idx = 0; row_idx < l->nelems; row_idx++) {
         for (uint32_t col_idx = 0; col_idx < l->nelems; col_idx++) {
-            score_t score = bs_pearson_r_via_signal_t(l->elems[row_idx]->signal, l->elems[col_idx]->signal);
+            score_t score = NAN;
+            if (l->elems[row_idx]->signal->n != l->elems[col_idx]->signal->n) {
+                fprintf(stderr, "Error: Vectors being correlated are of unequal length!\n");
+                exit(EXIT_FAILURE);
+            }
+            if ((l->elems[row_idx]->signal->sd != 0.0f) && (l->elems[col_idx]->signal->sd != 0.0f)) {
+                score = bs_pearson_r_via_signal_t(l->elems[row_idx]->signal, l->elems[col_idx]->signal, l->elems[row_idx]->signal->n);
+            }
             byte_t encoded_score = bs_encode_score_to_byte(score);
             if (bs_globals.verbose) fprintf(stderr, "cell [%05u, %05u] score [%f] encoding [%02x]\n", row_idx, col_idx, score, encoded_score);
             fprintf(stdout, "%c", encoded_score);
         }
-    }    
+    }
 }
 
-static inline void 
+static inline void
 bs_calculate_mean_and_sd_signal_avx(score_t* d, uint32_t n, score_t* m, score_t* sd)
 {
     score_t sum8[8] = {0};
     score_t s = 0.0f;
     score_t ss = 0.0f;
     score_t* ptrA = d;
-    
+
     __m256 sum = _mm256_set1_ps(0.0);
     __m256 sumsqr = _mm256_set1_ps(0.0);
     __m256 a;
@@ -813,7 +813,7 @@ bs_calculate_mean_and_sd_signal_avx(score_t* d, uint32_t n, score_t* m, score_t*
             pOut[6],
             pOut[7]);
     */
-    
+
     sum = _mm256_hadd_ps(sum, sum);
 
     /*
@@ -923,6 +923,6 @@ bs_calculate_mean_and_sd_signal_avx(score_t* d, uint32_t n, score_t* m, score_t*
     _mm256_store_ps(sum8, sumsqr);
     ss = sum8[0] + sum8[1];
 
-    *m = s / n;    
+    *m = s / n;
     *sd = sqrt((ss - (s * s / n))/(n - 1));
 }

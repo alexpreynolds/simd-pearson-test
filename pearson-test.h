@@ -42,30 +42,30 @@ extern "C" {
 
     extern const byte_t kNANEncodedByte;
     const byte_t kNANEncodedByte = 0xca;
-    
+
     extern const score_t kEpsilon;
     const score_t kEpsilon = 0.0000001f;
 
     extern const score_t kEpsilonLessStringent;
     const score_t kEpsilonLessStringent = 0.001f;
-    
+
     extern const score_t kSelfCorrelationScore;
     const score_t kSelfCorrelationScore = +1.0f;
-    
+
     extern const score_t kNoCorrelationScore;
     const score_t kNoCorrelationScore = +0.0f;
 
-    static const score_t bs_encode_byte_to_score_table[256] = 
-        {-1.00, 
+    static const score_t bs_encode_byte_to_score_table[256] =
+        {-1.00,
          -0.99, -0.98, -0.97, -0.96, -0.95, -0.94, -0.93, -0.92, -0.91, -0.90,
          -0.89, -0.88, -0.87, -0.86, -0.85, -0.84, -0.83, -0.82, -0.81, -0.80,
-         -0.79, -0.78, -0.77, -0.76, -0.75, -0.74, -0.73, -0.72, -0.71, -0.70, 
-         -0.69, -0.68, -0.67, -0.66, -0.65, -0.64, -0.63, -0.62, -0.61, -0.60, 
-         -0.59, -0.58, -0.57, -0.56, -0.55, -0.54, -0.53, -0.52, -0.51, -0.50, 
-         -0.49, -0.48, -0.47, -0.46, -0.45, -0.44, -0.43, -0.42, -0.41, -0.40, 
-         -0.39, -0.38, -0.37, -0.36, -0.35, -0.34, -0.33, -0.32, -0.31, -0.30, 
-         -0.29, -0.28, -0.27, -0.26, -0.25, -0.24, -0.23, -0.22, -0.21, -0.20, 
-         -0.19, -0.18, -0.17, -0.16, -0.15, -0.14, -0.13, -0.12, -0.11, -0.10, 
+         -0.79, -0.78, -0.77, -0.76, -0.75, -0.74, -0.73, -0.72, -0.71, -0.70,
+         -0.69, -0.68, -0.67, -0.66, -0.65, -0.64, -0.63, -0.62, -0.61, -0.60,
+         -0.59, -0.58, -0.57, -0.56, -0.55, -0.54, -0.53, -0.52, -0.51, -0.50,
+         -0.49, -0.48, -0.47, -0.46, -0.45, -0.44, -0.43, -0.42, -0.41, -0.40,
+         -0.39, -0.38, -0.37, -0.36, -0.35, -0.34, -0.33, -0.32, -0.31, -0.30,
+         -0.29, -0.28, -0.27, -0.26, -0.25, -0.24, -0.23, -0.22, -0.21, -0.20,
+         -0.19, -0.18, -0.17, -0.16, -0.15, -0.14, -0.13, -0.12, -0.11, -0.10,
          -0.09, -0.08, -0.07, -0.06, -0.05, -0.04, -0.03, -0.02, -0.01, -0.00,
          +0.00, +0.01, +0.02, +0.03, +0.04, +0.05, +0.06, +0.07, +0.08, +0.09,
          +0.10, +0.11, +0.12, +0.13, +0.14, +0.15, +0.16, +0.17, +0.18, +0.19,
@@ -77,12 +77,12 @@ extern "C" {
          +0.70, +0.71, +0.72, +0.73, +0.74, +0.75, +0.76, +0.77, +0.78, +0.79,
          +0.80, +0.81, +0.82, +0.83, +0.84, +0.85, +0.86, +0.87, +0.88, +0.89,
          +0.90, +0.91, +0.92, +0.93, +0.94, +0.95, +0.96, +0.97, +0.98, +0.99,
-         +1.00, 
-           NAN, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, 
-         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, 
-         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, 
-         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, 
-         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, 
+         +1.00,
+           NAN, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00,
+         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00,
+         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00,
+         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00,
+         +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00, +0.00,
          +0.00, +0.00, +0.00, +0.00};
 
     typedef struct signal {
@@ -143,7 +143,7 @@ extern "C" {
         lookup_avx_t* lookup_avx;
     } bs_globals;
 
-    void bs_initialize_lookup_avx_via_signal_avx(const char* ifn, lookup_avx_t** lp);    
+    void bs_initialize_lookup_avx_via_signal_avx(const char* ifn, lookup_avx_t** lp);
     void bs_initialize_lookup_via_signal(const char* ifn, lookup_t** lp);
     void bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* id, signal_avx_t* sa, bed5_avx_t** ep);
     void bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, bed5_t** ep);
@@ -162,7 +162,7 @@ extern "C" {
     void bs_initialize_command_line_options(int argc, char** argv);
     void bs_print_usage(FILE* os);
     void bs_delete_globals();
-    score_t bs_pearson_r_via_signal_t(signal_t* a, signal_t* b);
+    static inline score_t bs_pearson_r_via_signal_t(signal_t* a, signal_t* b, uint32_t len);
     static inline score_t bs_mean_signal(score_t* d, uint32_t len);
     score_t bs_sample_sd_signal(score_t* d, uint32_t len, score_t m);
     inline score_t bs_truncate_score_to_precision(score_t d, int prec);
