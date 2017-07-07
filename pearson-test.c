@@ -111,7 +111,8 @@ bs_initialize_lookup_via_signal(const char* ifn, lookup_t** lp)
         sscanf(start_str, "%" SCNu64, &start_val);
         sscanf(stop_str, "%" SCNu64, &stop_val);
         bed5_t* e = NULL;
-        bs_initialize_bed5_element(chr_str, start_val, stop_val, id_str, &e);
+        signal_t* sp = NULL;
+        bs_initialize_bed5_element(chr_str, start_val, stop_val, id_str, sp, &e);
         bs_push_bed5_element_to_lookup(e, &l);
     }
 
@@ -191,7 +192,7 @@ bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* i
 }
 
 void
-bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, bed5_t** ep)
+bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, signal_t* sp, bed5_t** ep)
 {
     if (bs_globals.verbose) fprintf(stderr, "bs_initialize_bed5_element()\n");
 
@@ -221,7 +222,17 @@ bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, b
         }
         memcpy(e->id, id, strlen(id) + 1);
     }
-    (e->id) ? bs_initialize_signal(e->id, &(e->signal)) : NULL;
+
+    //(e->id) ? bs_initialize_signal(e->id, &(e->signal)) : NULL;
+    e->signal = NULL;
+    if (!sp) {
+        //fprintf(stderr, "setting up new signal()\n");
+        bs_initialize_signal(e->id, &(e->signal));
+    }
+    else {
+        //fprintf(stderr, "copying old signal()\n");
+        bs_copy_signal(sp, &(e->signal));
+    }
 
     if (!e) {
         fprintf(stderr, "Error: Could not parse BED elements into bed5_t struct\n");
@@ -245,6 +256,31 @@ bs_copy_signal_avx(signal_avx_t* src, signal_avx_t** dest)
     s->data = aligned_alloc(32, s->n * sizeof(*s->data));
     if (!s->data) {
         fprintf(stderr, "Error: Could not allocate space for signal_avx data pointer!\n");
+        exit(EXIT_FAILURE);
+    }
+    for (uint32_t idx = 0; idx < s->n; idx++) {
+        s->data[idx] = src->data[idx];
+    }
+    s->mean = src->mean;
+    s->sd = src->sd;
+
+    *dest = s;
+}
+
+void
+bs_copy_signal(signal_t* src, signal_t** dest)
+{
+    signal_t* s = NULL;
+    s = malloc(sizeof(signal_t));
+    if (!s) {
+        fprintf(stderr, "Error: Could not allocate space for signal_t pointer copy!\n");
+        exit(EXIT_FAILURE);
+    }
+    s->n = src->n;
+    s->data = NULL;
+    s->data = aligned_alloc(32, s->n * sizeof(*s->data));
+    if (!s->data) {
+        fprintf(stderr, "Error: Could not allocate space for signal_t data pointer!\n");
         exit(EXIT_FAILURE);
     }
     for (uint32_t idx = 0; idx < s->n; idx++) {
@@ -329,7 +365,6 @@ bs_initialize_signal(char* id, signal_t** sp)
         exit(EXIT_FAILURE);
     }
     s->n = 0;
-    s->data = NULL;
     s->mean = NAN;
     s->sd = NAN;
 
@@ -340,7 +375,9 @@ bs_initialize_signal(char* id, signal_t** sp)
     }
     s->n++;
 
-    s->data = malloc(sizeof(*s->data) * s->n);
+    //s->data = malloc(sizeof(*s->data) * s->n);
+    s->data = NULL;
+    s->data = aligned_alloc(32, s->n * sizeof(*s->data));
     if (!s->data) {
         fprintf(stderr, "Error: Could not allocate space for signal data pointer!\n");
         exit(EXIT_FAILURE);
@@ -432,6 +469,7 @@ bs_push_bed5_element_to_lookup(bed5_t* e, lookup_t** lp)
                                        (*lp)->elems[idx]->start,
                                        (*lp)->elems[idx]->stop,
                                        (*lp)->elems[idx]->id,
+                                       (*lp)->elems[idx]->signal,
                                        &new_elems[idx]);
             if (bs_globals.verbose) fprintf(stderr, "deleting old element at index [%u]...\n", idx + 1);
             bs_delete_bed5_element(&((*lp)->elems[idx]));
@@ -708,7 +746,7 @@ bs_mean_signal(score_t* d, uint32_t len)
     return s / len;
 }
 
-score_t
+static inline score_t
 bs_sample_sd_signal(score_t* d, uint32_t len, score_t m)
 {
     score_t s = 0.0f;
@@ -718,14 +756,14 @@ bs_sample_sd_signal(score_t* d, uint32_t len, score_t m)
     return sqrt(s / (len - 1));
 }
 
-inline score_t
+static inline score_t
 bs_truncate_score_to_precision(score_t d, int prec)
 {
     score_t factor = (score_t) powf(10, prec);
     return (d < 0) ? (score_t) ceil(d * factor)/factor : (score_t) floor((d + kEpsilon) * factor)/factor;
 }
 
-inline byte_t
+static inline byte_t
 bs_encode_score_to_byte(score_t d)
 {
     if (isnan(d)) {
@@ -737,7 +775,7 @@ bs_encode_score_to_byte(score_t d)
     return (byte_t) encode_d;
 }
 
-inline bool
+static inline bool
 bs_signbit(score_t d)
 {
     return (signbit(d) > 0) ? true : false;

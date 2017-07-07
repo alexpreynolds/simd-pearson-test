@@ -146,8 +146,9 @@ extern "C" {
     void bs_initialize_lookup_avx_via_signal_avx(const char* ifn, lookup_avx_t** lp);
     void bs_initialize_lookup_via_signal(const char* ifn, lookup_t** lp);
     void bs_initialize_bed5_avx_element(char* chr, uint64_t start, uint64_t stop, char* id, signal_avx_t* sa, bed5_avx_t** ep);
-    void bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, bed5_t** ep);
+    void bs_initialize_bed5_element(char* chr, uint64_t start, uint64_t stop, char* id, signal_t* sp, bed5_t** ep);
     void bs_copy_signal_avx(signal_avx_t* src, signal_avx_t** dest);
+    void bs_copy_signal(signal_t* src, signal_t** dest);
     void bs_initialize_signal_avx(char* id, signal_avx_t** sp);
     void bs_initialize_signal(char* id, signal_t** sp);
     void bs_push_bed5_avx_element_to_lookup_avx(bed5_avx_t* e, lookup_avx_t** lp);
@@ -164,10 +165,10 @@ extern "C" {
     void bs_delete_globals();
     static inline score_t bs_pearson_r_via_signal_t(signal_t* a, signal_t* b, uint32_t len);
     static inline score_t bs_mean_signal(score_t* d, uint32_t len);
-    score_t bs_sample_sd_signal(score_t* d, uint32_t len, score_t m);
-    inline score_t bs_truncate_score_to_precision(score_t d, int prec);
-    inline byte_t bs_encode_score_to_byte(score_t d);
-    inline bool bs_signbit(score_t d);
+    static inline score_t bs_sample_sd_signal(score_t* d, uint32_t len, score_t m);
+    static inline score_t bs_truncate_score_to_precision(score_t d, int prec);
+    static inline byte_t bs_encode_score_to_byte(score_t d);
+    static inline bool bs_signbit(score_t d);
     void bs_calculate_pearson_scores_via_signal_avx(lookup_avx_t* l);
     void bs_calculate_pearson_scores_via_signal(lookup_t* l);
     static inline void bs_calculate_mean_and_sd_signal_avx(score_t* d, uint32_t n, score_t* mean, score_t* sd);

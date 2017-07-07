@@ -30,8 +30,8 @@ build:
 	@echo "build..."
 	module add gcc; \
 	module add glibc; \
-	$(CC) $(BLDFLAGS) $(CFLAGS) -c pearson-test.c -o pearson-test.o; \
-	$(CC) $(BLDFLAGS) $(CFLAGS) $(INCLUDES) $(LIBS) pearson-test.o -o ${binary} $(LINKS); \
+	$(CC) -g $(BLDFLAGS) $(CFLAGS) -c pearson-test.c -o pearson-test.o; \
+	$(CC) -g $(BLDFLAGS) $(CFLAGS) $(INCLUDES) $(LIBS) pearson-test.o -o ${binary} $(LINKS); \
 
 test-non-avx: build
 	@echo "test (non-AVX)..."
